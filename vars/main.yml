@@ -3,6 +3,9 @@ download_dest: /tmp
 
 python_target_version: 2.7
 python: python{{python_target_version}}
-pip: pip{{python_target_version}}
+
+
+pip: '{{airflow_virtual_env_bin_path}}/pip'
 
 airflow_extra_packages:
+

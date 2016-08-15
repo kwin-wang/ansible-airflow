@@ -1,7 +1,11 @@
 ---
+
 # [core]
 # The home folder for airflow, default is ~/airflow
-airflow_home: ~/airflow
+airflow_home: "~/airflow"
+
+# Include airflow.cfg, db if DataBase is sqlite
+airflow_meta_folder: "{{airflow_home}}/airflow-meta"
 
 # The folder where your airflow pipelines live, most likely a
 # subfolder in a code repository
@@ -21,7 +25,7 @@ airflow_executor: "SequentialExecutor"
 # The SqlAlchemy connection string to the metadata database.
 # SqlAlchemy supports many different database engine, more information
 # their website
-airflow_sql_alchemy_conn: "sqlite:///{{airflow_home}}/airflow.db"
+airflow_sql_alchemy_conn: "sqlite:///{{airflow_meta_folder}}/airflow.db"
 
 # The SqlAlchemy pool size is the maximum number of database connections
 # in the pool.
@@ -195,3 +199,43 @@ airflow_mesos_authenticate:  False
 # Mesos credentials, if authentication is enabled
 airflow_mesos_default_principal:  admin
 airflow_mesos_default_secret:  admin
+
+
+# [dotfashion]
+#
+path_remote: '/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin'
+airflow_deploy_user: 'airflow'
+airflow_deploy_user_home: "/home/{{airflow_deploy_user}}"
+airflow_deploy_groups: 'supervisor'
+
+conda: '/opt/anaconda/bin/conda'
+
+airflow_virtual_env: 'airflow'
+airflow_virtual_env_path: '{{airflow_deploy_user_home}}/.conda/envs/airflow'
+airflow_virtual_env_bin_path: '{{airflow_virtual_env_path}}/bin'
+airflow_version: '1.7.1.3'
+
+airflow_command_path: '{{ airflow_virtual_env_bin_path }}/airflow'
+airflow_command_link_path: '/usr/local/bin/airflow'
+airflow_cmd: '{{ airflow_command_path }}'
+
+pip: '{{airflow_virtual_env_bin_path}}/pip'
+
+airflow_share_folder: "{{airflow_home}}/share"
+#
+# include some projects 
+airflow_deploy_folder: "{{airflow_home}}/deploy"
+
+# Include airflow.cfg, db if DataBase is sqlite
+airflow_meta_folder: "{{airflow_home}}/airflow-meta"
+
+airflow_local_settings_py_file_path: 'None'
+airflow_helper_py_file_path: 'None'
+
+airflow_initdb: 'initdb'
+airflow_resetdb: 'resetdb'
+airflow_upgradedb: 'upgradedb'
+airflow_db_operation: "{{ airflow_initdb }}"
+
+airflow_webserver_service_name: 'airflow_webserver'
+airflow_scheduler_service_name: 'airflow_scheduler'

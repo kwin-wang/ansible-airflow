@@ -1,4 +1,17 @@
 ---
-- hosts: all
+- hosts: test
+  vars:
+    airflow_home: '/opt/airflow'
+    supervisord_socket_chown: "{{supervisor_user}}:{{supervisor_group}}"
+    supervisord_socket_chmod: '0770'
+    airflow_deploy_user: ec2-user
+    # supervisord_additional_conf_dir: '/etc/supervisor/conf.d'
+
+  pre_tasks:
+      - stat: path="/opt/anaconda/bin/conda"
+        register: conda_stat
+      - debug: msg="{{conda_stat}}"
   roles:
+      - { role: 'ansible-anaconda', when: "conda_stat.stat.exists is defined and not conda_stat.stat.exists" }
+      - { role: 'ansible-supervisord' }
       - { role: '.' }

@@ -1,0 +1,14 @@
+---
+- name: Get packages from yum
+  when: ansible_os_family == 'RedHat'
+  become: yes
+  become_method: sudo
+  yum: name="{{item}}" state=present
+  with_items:
+    - krb5-devel
+    - cyrus-sasl
+    - "@Development Tools"
+    - openssl-devel
+    - libffi
+    - libffi-devel
+

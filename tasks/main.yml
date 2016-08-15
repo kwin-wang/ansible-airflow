@@ -1,26 +1,131 @@
 ---
-- include: "{{ item }}"
-  with_first_found:
-    - "{{ ansible_distribution }}-{{ ansible_distribution_major_version | int}}.yml"
-    - "{{ ansible_distribution }}.yml"
-    - "{{ ansible_os_family }}.yml"
+- include: "install.RedHat.yml"
 
-- name: Install Airflow
-  command: sudo env "PATH=$PATH" {{ pip }} install airflow
+- name: Create {{ airflow_deploy_user }}
+  become: yes
+  become_user: root
+  user: 
+    name: "{{ airflow_deploy_user }}"
+    password: "{{ airflow_deploy_user }}"
+
+- name: Add ansible user to supervisor groups
+  become: yes
+  become_user: root
+  user: name={{ansible_user}} groups={{airflow_deploy_groups}} append=yes
+
+- name: Make sudo command no password of airflow deploy user {{airflow_deploy_user}}
+  become: yes
+  become_user: root
+  template:
+    src: etc/sudoers.d/airflow-init.j2
+    dest: /etc/sudoers.d/airflow-init
+
+- name: Create airflow virtual env
+  become: yes
+  become_user: "{{airflow_deploy_user}}"
+  become_method: sudo
+  shell: "{{conda}} create -n {{airflow_virtual_env}} -y pandas"
+  args:
+    creates: "{{airflow_virtual_env_bin_path}}/conda"
 
 - name: Install Airflow Extra Packages
-  command: sudo env "PATH=$PATH" {{ pip }} install airflow[{{ item }}]
-  with_items: '{{airflow_extra_packages}}'
-  when: airflow_extra_packages is defined
+  become: yes
+  become_user: "{{ airflow_deploy_user}}"
+  shell: "{{conda}} install -n {{airflow_virtual_env}} {{ item }}"
+  with_items:
+    - pytz 
+    - cryptography 
+    - pyOpenSSL 
+    - ndg-httpsclient 
+    - pyasn1 
+    - psycopg2 
+
+- name: Install airflow
+  become: yes
+  become_user: "{{ airflow_deploy_user }}"
+  shell:  "{{pip}} install airflow[celery,postgresql,hive]=={{airflow_version}}"
+  tags:
+    - airflow
+
+- name: Link airflow
+  become: yes
+  become_method: sudo
+  file: src={{airflow_command_path}} dest={{airflow_command_link_path}} state=link
 
 - name: Creates Airflow Home Directory 
-  file: path={{ airflow_home }} state=directory
+  become: yes
+  become_user: root
+  file: 
+    path: "{{ item }}"
+    state: directory 
+    owner: "{{airflow_deploy_user}}"
+    group: "{{airflow_deploy_user}}" 
+    mode: 'g+rwx'
+  with_items:
+    - "{{ airflow_home }}"
+    - "{{ airflow_meta_folder}}"
+    - "{{ airflow_deploy_folder }}"
+    - "{{ airflow_share_folder }}"
+    - "{{ airflow_base_log_folder }}"
 
 # Configuration
 - name: Overwrite configuration
+  become: yes
+  become_user: "{{airflow_deploy_user}}"
   template: src=airflow.cfg.j2 dest={{ airflow_home }}/airflow.cfg
+  notify:
+    - restart airflow all service
+  tags:
+    - airflow_cfg
+    - airflow_init
+    - airflow
 
-# - name: Setting up a Backend
-#   shell : >-
-#     export AIRFLOW_HOME={{ airflow_home }}
-#     && airflow initdb
+- name: "Init airflow gloabl env and  copy airflow.sh to /etc/profiled.d/"
+  become: yes
+  become_user: root
+  template: 
+    src: etc/profile.d/airflow.sh
+    dest: /etc/profile.d/airflow.sh 
+  tags:
+    - airflow_cfg
+    - airflow_init
+    - airflow
+
+- name: Set airflow supervisor config
+  become: yes
+  become_method: sudo
+  template: src="etc/supervisor/conf.d/{{item}}" dest="{{supervisord_additional_conf_dir}}/{{item}}"
+  with_items:
+    - airflow-webserver.conf
+    - airflow-scheduler.conf
+  notify:
+    - reread supervisord
+    - update supervisord
+  tags: test
+
+- name: Setting up a Backend
+  become: yes
+  become_user: "{{ airflow_deploy_user }}"
+  when: >-
+    airflow_db_operation is defined 
+    and (airflow_db_operation ==  airflow_initdb
+    or airflow_db_operation == airflow_resetdb
+    or airflow_db_operation == airflow_upgradedb)
+  shell :  "{{ airflow_cmd }} {{airflow_db_operation}} {{ '-y' if airflow_db_operation == airflow_resetdb else '' }}"
+  environment: 
+    - AIRFLOW_HOME: "{{ airflow_home }}"
+    - PYTHONPATH: "{{ airflow_local_settings_py_file_path }}:{{ airflow_helper_py_file_path }}"
+  tags:
+     - airflow_init
+     - airflow_db_init
+
+- name: flush supervirsor
+  shell: supervisorctl reread && supervisorctl update
+  tags: hello
+
+- name: Ensure airflow service running
+  supervisorctl: name="{{item}}" state="started"
+  with_items:
+      - airflow_webserver
+      - airflow_scheduler
+  tags: hello

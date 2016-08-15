@@ -1,2 +1,24 @@
 ---
 # handlers file for ansible-airflow
+#
+- name: start airflow all service
+  supervisorctl:
+    name: 'airflow:'
+    state: started
+
+- name: restart webserver
+  supervisorctl:
+    name: airflow_webserver 
+    state: restarted
+
+- name: restart scheduler
+  supervisorctl:
+    name: airflow_scheduler
+    state: restarted
+
+- name: restart airflow all service
+  supervisorctl:
+    name: 'airflow:'
+    state: restarted
+
+

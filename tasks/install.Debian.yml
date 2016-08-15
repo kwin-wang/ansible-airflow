@@ -1,0 +1,54 @@
+---
+- name: Get packages from yum
+  when: ansible_os_family == 'RedHat'
+  become: yes
+  become_user: root
+  package: name={{ item }}
+  with_items:
+    - git
+    - krb5-devel
+    - cyrus-sasl
+    - "@Development Tools"
+    - openssl-devel
+    - libffi-devel
+
+- name: Get packages from apt
+  when: ansible_os_family == 'Debian'
+  become: yes
+  become_user: root
+  yum: name={{ item }}
+  with_items:
+    - git
+    - python-pip
+    - python-dev
+    - libkrb5-dev
+    - libsasl2-dev 
+    - libssl-dev 
+    - libffi-dev 
+    - build-essential 
+    - libblas-dev 
+    - liblapack-dev 
+
+- name: Create airflow virtual env
+  command: conda create -n airflow pandas
+  args:
+    creates: ~/.conda/envs/airflow/bin/conda
+
+- name: Install pandas
+  shell: conda install -y -n airflow pandas 
+  environment:
+    PATH: ~/.conda/envs/airflow/bin:$PATH
+
+- name: Install airflow
+  shell: "{{ item }}"
+  with_items:
+    - pip install --upgrade pip
+    - pip install pytz 
+    - pip install cryptography 
+    - pip install pyOpenSSL 
+    - pip install ndg-httpsclient 
+    - pip install pyasn1 
+    - pip install psycopg2 
+    - pip install airflow[celery,postgresql,hive]=={{airflow_version}}
+  environment:
+    PATH: ~/.conda/envs/airflow/bin:$PATH
