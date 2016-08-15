@@ -229,5 +229,4 @@ airflow_mesos_default_secret:  admin
 BSD
 
 ## Author Information
-Kyungwook Park
-@kyungw00k(twitter, github)
+kwin.wang  <kwin.wang@gmail.com>
