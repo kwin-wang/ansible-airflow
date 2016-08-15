@@ -1,2 +1,4 @@
 ---
-- src: kyungw00k.python27
+- src: https://github.com/kwin-wang/ansible-supervisord.git
+
+- src: https://github.com/kwin-wang/ansible-anaconda.git
