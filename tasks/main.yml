@@ -74,7 +74,9 @@
   become_user: "{{airflow_deploy_user}}"
   template: src=airflow.cfg.j2 dest={{ airflow_home }}/airflow.cfg
   notify:
-    - restart airflow all service
+    - init airflow db
+    - restart airflow webserver
+    - restart airflow scheduler
   tags:
     - airflow_cfg
     - airflow_init
@@ -103,29 +105,29 @@
     - update supervisord
   tags: test
 
-- name: Setting up a Backend
-  become: yes
-  become_user: "{{ airflow_deploy_user }}"
-  when: >-
-    airflow_db_operation is defined 
-    and (airflow_db_operation ==  airflow_initdb
-    or airflow_db_operation == airflow_resetdb
-    or airflow_db_operation == airflow_upgradedb)
-  shell :  "{{ airflow_cmd }} {{airflow_db_operation}} {{ '-y' if airflow_db_operation == airflow_resetdb else '' }}"
-  environment: 
-    - AIRFLOW_HOME: "{{ airflow_home }}"
-    - PYTHONPATH: "{{ airflow_local_settings_py_file_path }}:{{ airflow_helper_py_file_path }}"
-  tags:
-     - airflow_init
-     - airflow_db_init
+#- name: Setting up a Backend
+#  become: yes
+#  become_user: "{{ airflow_deploy_user }}"
+#  when: >-
+#    airflow_db_operation is defined 
+#    and (airflow_db_operation ==  airflow_initdb
+#    or airflow_db_operation == airflow_resetdb
+#    or airflow_db_operation == airflow_upgradedb)
+#  shell :  "{{ airflow_cmd }} {{airflow_db_operation}} {{ '-y' if airflow_db_operation == airflow_resetdb else '' }}"
+#  environment: 
+#    - AIRFLOW_HOME: "{{ airflow_home }}"
+#    - PYTHONPATH: "{{ airflow_local_settings_py_file_path }}:{{ airflow_helper_py_file_path }}"
+#  tags:
+#     - airflow_init
+#     - airflow_db_init
+#
+#- name: flush supervirsor
+#  shell: supervisorctl reread && supervisorctl update
+#  tags: hello
 
-- name: flush supervirsor
-  shell: supervisorctl reread && supervisorctl update
-  tags: hello
-
-- name: Ensure airflow service running
-  supervisorctl: name="{{item}}" state="started"
-  with_items:
-      - airflow_webserver
-      - airflow_scheduler
-  tags: hello
+#- name: Ensure airflow service running
+#  supervisorctl: name="{{item}}" state="started"
+#  with_items:
+#      - airflow_webserver
+#      - airflow_scheduler
+#  tags: hello

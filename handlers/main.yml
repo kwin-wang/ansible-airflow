@@ -1,17 +1,18 @@
 ---
 # handlers file for ansible-airflow
 #
-- name: start airflow all service
-  supervisorctl:
-    name: 'airflow:'
-    state: started
-
-- name: restart webserver
+- name: init airflow db
+  shell: {{airflow_cmd}} initdb
+  environment:
+    AIRFLOW_HOME: "{{airflow_home}}"
+    PATH: "{{airflow_virtual_env_bin_path}}:{{ansible_env.PATH}}"
+  
+- name: restart airflow webserver
   supervisorctl:
     name: airflow_webserver 
     state: restarted
 
-- name: restart scheduler
+- name: restart airflow scheduler
   supervisorctl:
     name: airflow_scheduler
     state: restarted
