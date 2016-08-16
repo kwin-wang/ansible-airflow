@@ -2,7 +2,7 @@
 # handlers file for ansible-airflow
 #
 - name: init airflow db
-  shell: {{airflow_cmd}} initdb
+  shell: "{{airflow_cmd}} initdb"
   environment:
     AIRFLOW_HOME: "{{airflow_home}}"
     PATH: "{{airflow_virtual_env_bin_path}}:{{ansible_env.PATH}}"
