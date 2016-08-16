@@ -1,0 +1,23 @@
+galaxy_info:
+  author: Yajun Wang
+  description: Install Airflow using pip
+  license: BSD
+
+  min_ansible_version: 2.0
+
+  platforms:
+    - name: EL
+      versions:
+        - 7
+        - 6
+    - name: Ubuntu
+      versions:
+        - trusty
+        - vivid
+        - wily
+    - name: Amazon
+  galaxy_tags:
+    - system
+    - application
+    - webserver
+
