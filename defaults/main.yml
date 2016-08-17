@@ -246,7 +246,7 @@ airflow_supervisor_conf_template:
 
 airflow_sudoer_template: {src: etc/sudoers.d/airflow-init.j2, dest: /etc/sudoers.d/airflow-init }
 
-airflow_profile_template: {src: etc/profile.d/airflow.sh, dest: "/etc/profile.d/{{airflow_deploy_user}}.sh" }
+airflow_profile_template: {src: etc/profile.d/airflow.sh, dest: /etc/profile.d/airflow.sh }
 
 airflow_config_template: {src: airflow.cfg.j2, dest: "{{airflow_home}}/airflow.cfg"}
 
