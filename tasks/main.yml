@@ -88,6 +88,15 @@
     - airflow_init
     - airflow
 
+- name: Overwrite airflow profile
+  become: yes
+  become_user: root
+  template: src="{{airflow_profile_template.src}}" dest="{{airflow_profile_template.dest}}"
+  notify:
+    - init airflow db
+    - restart airflow webserver
+    - restart airflow scheduler
+
 - name: "Init airflow gloabl env and  copy airflow.sh to /etc/profiled.d/"
   become: yes
   become_user: root
