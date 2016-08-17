@@ -248,6 +248,6 @@ airflow_sudoer_template: {src: etc/sudoers.d/airflow-init.j2, dest: /etc/sudoers
 
 airflow_profile_template: {src: etc/profile.d/airflow.sh, dest: "/etc/profile.d/{{airflow_deploy_user}}.sh" }
 
-airflow_config_template: {src: etc/airflow.cfg.j2, dest: "{{airflow_home}}/airflow.cfg"}
+airflow_config_template: {src: airflow.cfg.j2, dest: "{{airflow_home}}/airflow.cfg"}
 
 airflow_other_templates:

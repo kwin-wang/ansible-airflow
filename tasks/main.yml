@@ -99,11 +99,6 @@
     - airflow_init
     - airflow
 
-- name: Set airflow other template
-  become: yes
-  become_user: root
-  
-
 - name: Set airflow supervisor config
   become: yes
   become_method: sudo
@@ -114,7 +109,7 @@
     group: "{{ item.group|default(omit)}}"
     backup: "{{ item.backup|default(omit)}}"
     mode: "{{item.mode|default(omit)}}"
-  with_items: : "{{ airflow_supervisor_conf_template }}"
+  with_items:  "{{ airflow_supervisor_conf_template }}"
   notify:
     - reread supervisord
     - update supervisord
@@ -133,8 +128,8 @@
     group: "{{ item.group|default(omit)}}"
     backup: "{{ item.backup|default(omit)}}"
     mode: "{{item.mode|default(omit)}}"
-  notify: {{ item.notfiy|default(omit)}}
-  with_items: {{airflow_other_templates}}
+  notify: "{{ item.notify|default(omit)}}"
+  with_items: "{{airflow_other_templates}}"
   tags:
     - airflow
     - airflow_other_config
