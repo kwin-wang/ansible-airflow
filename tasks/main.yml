@@ -114,7 +114,7 @@
     group: "{{ item.group|default(omit)}}"
     backup: "{{ item.backup|default(omit)}}"
     mode: "{{item.mode|default(omit)}}"
-  with_items: : "{{ airflow_profile_template }}"
+  with_items: : "{{ airflow_supervisor_conf_template }}"
   notify:
     - reread supervisord
     - update supervisord
