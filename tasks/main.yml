@@ -17,8 +17,8 @@
   become: yes
   become_user: root
   template:
-    src: etc/sudoers.d/airflow-init.j2
-    dest: /etc/sudoers.d/airflow-init
+    src: "{{ airflow_sudoer_template.src }}"
+    dest: "{{ airflow_sudoer_template.dest }}"
 
 - name: Create airflow virtual env
   become: yes
@@ -72,7 +72,13 @@
 - name: Overwrite configuration
   become: yes
   become_user: "{{airflow_deploy_user}}"
-  template: src=airflow.cfg.j2 dest={{ airflow_home }}/airflow.cfg
+  template: 
+    src: "{{airflow_config_template.src}}" 
+    dest: "{{ airflow_config_template.dest }}"
+    owner: "{{airflow_config_template.owner|default(omit)}}"
+    group: "{{ airflow_config_template.group|default(omit)}}"
+    backup: "{{ airflow_config_template.backup|default(omit)}}"
+    mode: "{{airflow_config_template.mode|default(omit)}}"
   notify:
     - init airflow db
     - restart airflow webserver
@@ -86,24 +92,54 @@
   become: yes
   become_user: root
   template: 
-    src: etc/profile.d/airflow.sh
-    dest: /etc/profile.d/airflow.sh 
+    src: "{{airflow_sudoer_template.src}}" 
+    dest: "{{ airflow_sudoer_template.dest }}"
   tags:
     - airflow_cfg
     - airflow_init
     - airflow
 
+- name: Set airflow other template
+  become: yes
+  become_user: root
+  
+
 - name: Set airflow supervisor config
   become: yes
   become_method: sudo
-  template: src="etc/supervisor/conf.d/{{item}}" dest="{{supervisord_additional_conf_dir}}/{{item}}"
-  with_items:
-    - airflow-webserver.conf
-    - airflow-scheduler.conf
+  template: 
+    src: "{{item.src}}" 
+    dest: "{{ item.dest }}"
+    owner: "{{item.owner|default(omit)}}"
+    group: "{{ item.group|default(omit)}}"
+    backup: "{{ item.backup|default(omit)}}"
+    mode: "{{item.mode|default(omit)}}"
+  with_items: : "{{ airflow_profile_template }}"
   notify:
     - reread supervisord
     - update supervisord
   tags: test
+
+
+# Configuration
+- name: Set other configuration
+  when: airflow_other_config is defined and airflow_other_template is not none
+  become: yes
+  become_user: root
+  template: 
+    src: "{{item.src}}" 
+    dest: "{{ item.dest }}"
+    owner: "{{item.owner|default(omit)}}"
+    group: "{{ item.group|default(omit)}}"
+    backup: "{{ item.backup|default(omit)}}"
+    mode: "{{item.mode|default(omit)}}"
+  notify: {{ item.notfiy|default(omit)}}
+  with_items: {{airflow_other_templates}}
+  tags:
+    - airflow
+    - airflow_other_config
+    - airflow_config
+  
 
 #- name: Setting up a Backend
 #  become: yes
