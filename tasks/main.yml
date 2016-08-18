@@ -31,7 +31,11 @@
 - name: Install Airflow Extra Packages
   become: yes
   become_user: "{{ airflow_deploy_user}}"
-  shell: "{{conda}} install -n {{airflow_virtual_env}} {{ item }}"
+  conda: 
+    name: "{{item}}" 
+    state: present 
+    extra_args: " -n {{ airflow_virtual_env }}"
+    executable: "{{ airflow_virtual_env_bin_path }}"
   with_items:
     - pytz 
     - cryptography 
