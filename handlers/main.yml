@@ -6,6 +6,9 @@
   environment:
     AIRFLOW_HOME: "{{airflow_home}}"
     PATH: "{{airflow_virtual_env_bin_path}}:{{ansible_env.PATH}}"
+
+- name: wait for init airflow db
+  wait_for: port={{airflow_webserver_port}} state=started
   
 - name: restart airflow webserver
   supervisorctl:

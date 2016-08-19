@@ -203,6 +203,7 @@ airflow_mesos_default_secret:  admin
 
 # [dotfashion]
 #
+airflow_webserver_port: 8283
 path_remote: '/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin'
 airflow_deploy_user: 'airflow'
 airflow_deploy_user_home: "/home/{{airflow_deploy_user}}"
@@ -251,3 +252,4 @@ airflow_profile_template: {src: etc/profile.d/airflow.sh, dest: /etc/profile.d/a
 airflow_config_template: {src: airflow.cfg.j2, dest: "{{airflow_home}}/airflow.cfg"}
 
 airflow_other_templates:
+
