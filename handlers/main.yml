@@ -3,6 +3,11 @@
 #
 - name: init airflow db
   shell: "{{airflow_cmd}} initdb"
+  register: airflow_db_init_status
+  until: airflow_db_init_status.rc == 0
+  retries: 15
+  delay: 5
+  ignore_errors: yes
   environment:
     AIRFLOW_HOME: "{{airflow_home}}"
     PATH: "{{airflow_virtual_env_bin_path}}:{{ansible_env.PATH}}"
