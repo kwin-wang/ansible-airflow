@@ -25,7 +25,7 @@
   fail: msg="This handler not defined"
 
 - name: update airflow variables info
-  command: "{% set kv = item.strip().split(';') %} {{airflow_cmd}} -s {{kv[0]}} {{kv[1]}}"
+  command: "{% set kv = item.strip().split(';') %} {{airflow_cmd}} variables -s {{kv[0]}} {{kv[1]}}"
   with_lines: "cat {{airflow_variables_file}}"
   when: airflow_variables_file is defined and airflow_variables_file is not none
 
