@@ -14,6 +14,21 @@
 
 - name: wait for init airflow db
   wait_for: port={{airflow_webserver_port}} state=started
+
+- name: update airflow pools info
+  fail: msg="This handler not defined"
+
+- name: update airflow users info
+  fail: msg="This handler not defined"
+
+- name: update airflow connections info
+  fail: msg="This handler not defined"
+
+- name: update airflow variables info
+  command: "{% set kv = item.strip().split(';') %} {{airflow_cmd}} -s {{kv[0]}} {{kv[1]}}"
+  with_lines: "cat {{airflow_variables_file}}"
+  when: airflow_variables_file is defined and airflow_variables_file is not none
+
   
 - name: restart airflow webserver
   supervisorctl:
